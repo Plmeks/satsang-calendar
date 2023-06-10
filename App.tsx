@@ -4,18 +4,21 @@
  *
  * @format
  */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
 import {
+  Button,
+  Image,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   useColorScheme,
   View,
 } from 'react-native';
+
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
 import {
   Colors,
@@ -25,94 +28,136 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+import OcticonsIcon from 'react-native-vector-icons/Octicons';
+import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import HomeScreen from './src/screens/HomeScreen';
+import CalendarScreen from './src/screens/CalendarScreen';
+import EventScreen from './src/screens/EventScreen';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import BackButton from './src/components/BackButton';
+
+const queryClient = new QueryClient();
+
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+function AppScreen() {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
+    <Tab.Navigator
+      initialRouteName="Home"
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#e91e63',
+        tabBarItemStyle: {padding: 4},
+      }}>
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          tabBarLabel: 'Главная',
+          tabBarIcon: ({color, size}) => (
+            <OcticonsIcon name="home" color={color} size={size - 4} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Calendar"
+        component={CalendarScreen}
+        options={{
+          tabBarLabel: 'Календарь',
+          tabBarIcon: ({color, size}) => (
+            <AntDesignIcon name="calendar" color={color} size={size - 4} />
+          ),
+        }}
+      />
+      {/* <Tab.Screen
+              name="Event"
+              component={EventScreen}
+                options={{tabBarButton: () => null}}
+            /> */}
+    </Tab.Navigator>
   );
 }
-
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+    flex: 1,
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+    <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
+      <QueryClientProvider client={queryClient}>
+        <NavigationContainer>
+          {/* <Tab.Navigator
+            initialRouteName="Home"
+            backBehavior="initialRoute"
+            screenOptions={{
+              headerShown: false,
+              tabBarActiveTintColor: '#e91e63',
+              tabBarItemStyle: {padding: 4},
+            }}>
+            <Tab.Screen
+              name="Home"
+              component={HomeScreen}
+              options={{
+                tabBarLabel: 'Главная',
+                tabBarIcon: ({color, size}) => (
+                  <OcticonsIcon name="home" color={color} size={size - 4} />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="Calendar"
+              component={CalendarScreen}
+              options={{
+                tabBarLabel: 'Календарь',
+                tabBarIcon: ({color, size}) => (
+                  <AntDesignIcon
+                    name="calendar"
+                    color={color}
+                    size={size - 4}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="Event"
+              component={EventScreen}
+              options={{
+                tabBarButton: () => null,
+                headerShown: true,
+                headerLeft: BackButton,
+              }}
+            />
+          </Tab.Navigator> */}
+          <Stack.Navigator
+            initialRouteName="AppScreen"
+            screenOptions={{
+              headerShown: false,
+            }}>
+            <Stack.Screen
+              name="AppScreen"
+              component={AppScreen}
+              options={{headerTitle: ''}}
+            />
+            <Stack.Screen
+              name="Event"
+              component={EventScreen}
+              options={{
+                headerShown: true,
+                // headerTransparent: true,
+              }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </QueryClientProvider>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
